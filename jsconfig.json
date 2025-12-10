@@ -1,0 +1,18 @@
+// jsconfig.json
+{
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "lib": ["dom", "dom.iterable", "esnext"]
+  },
+  "include": ["src/**/*"] // به VS Code می‌گوید کدام فایل‌ها را شامل شود
+}
