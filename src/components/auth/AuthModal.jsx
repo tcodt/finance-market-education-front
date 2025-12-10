@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,12 +18,18 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, isSignUpDefault }) {
   const [authMethod, setAuthMethod] = useState("email"); // 'email' or 'phone'
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(isSignUpDefault);
   const [step, setStep] = useState("auth"); // 'auth' or 'verification'
   const [verificationCode, setVerificationCode] = useState("");
   const [contactInfo, setContactInfo] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsSignUp(isSignUpDefault);
+    }
+  }, [isOpen, isSignUpDefault]);
 
   const handleSubmit = () => {
     if (isSignUp) {
@@ -41,7 +47,17 @@ export default function AuthModal({ isOpen, onClose }) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+          setIsSignUp(false);
+          setStep("auth");
+        }
+        onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center text-[#1A1A1A]">

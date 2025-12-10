@@ -32,6 +32,7 @@ const menuItems = [
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
 
   return (
     <>
@@ -47,7 +48,7 @@ export default function Sidebar({ isOpen, onClose }) {
       <aside
         className={cn(
           "fixed top-0 right-0 h-full w-56 bg-white z-50 transition-transform duration-300 ease-out rounded-l-3xl shadow-[0_0_20px_rgba(0,0,0,0.1)] border-l border-[#D9D9D9]",
-          "lg:static lg:h-screen lg:sticky lg:top-0 lg:flex-shrink-0 lg:w-[220px]",
+          "lg:h-screen lg:sticky lg:top-0 lg:flex-shrink-0 lg:w-[220px]",
           isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
         )}
       >
@@ -99,14 +100,20 @@ export default function Sidebar({ isOpen, onClose }) {
           {/* Auth Buttons */}
           <div className="space-y-2 pt-4 border-t border-[#D9D9D9]">
             <Button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => {
+                setIsSignUpMode(false);
+                setShowAuthModal(true);
+              }}
               className="w-full bg-[#000000] hover:bg-[#333333] text-white rounded-lg py-2.5 gap-2 text-sm"
             >
               <LogIn className="w-4 h-4" />
               ورود
             </Button>
             <Button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => {
+                setIsSignUpMode(true);
+                setShowAuthModal(true);
+              }}
               variant="outline"
               className="w-full border-[#D9D9D9] hover:border-[#000000] hover:text-[#000000] rounded-lg py-2.5 gap-2 text-sm"
             >
@@ -120,6 +127,7 @@ export default function Sidebar({ isOpen, onClose }) {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        isSignUpDefault={isSignUpMode}
       />
     </>
   );
