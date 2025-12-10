@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import UIRootLayout from "@/components/layout/UIRootLayout.jsx";
+import Providers from "./providers";
 
 export const metadata = {
   title: "Finance Market Education",
@@ -12,7 +13,9 @@ export default function RootLayout({ children }) {
       <body>
         <Toaster />
 
-        <UIRootLayout>{children}</UIRootLayout>
+        <Providers>
+          <UIRootLayout>{children}</UIRootLayout>
+        </Providers>
       </body>
     </html>
   );
