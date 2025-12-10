@@ -22,6 +22,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function AuthModal({ isOpen, onClose, isSignUpDefault }) {
   const [authMethod, setAuthMethod] = useState("email"); // email | phone
@@ -73,9 +74,11 @@ export default function AuthModal({ isOpen, onClose, isSignUpDefault }) {
       } else {
         await login(data);
         onClose();
+        toast.success("ورود موفقیت آمز بود!");
       }
     } catch (err) {
       console.log("AUTH ERROR:", err);
+      toast.error("خطا! مشکلی رخ داد، لطفا دوباره تلاش کنید");
     }
   };
 

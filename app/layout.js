@@ -1,6 +1,7 @@
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import UIRootLayout from "@/components/layout/UIRootLayout.jsx";
+// import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
+import UIRootLayout from "@/components/layout/UIRootLayout";
 import Providers from "./providers";
 
 export const metadata = {
