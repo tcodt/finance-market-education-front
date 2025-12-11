@@ -138,7 +138,7 @@ export default function BookSummaries() {
         {filteredBooks.map((book) => (
           <Link
             key={book.id}
-            href={`${createPageUrl("BookSummaryDetail")}?id=${book.id}`}
+            href={`${createPageUrl("book-summary-detail")}?id=${book.id}`}
             className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-[#D9D9D9] hover:shadow-xl transition-all duration-300"
           >
             {/* Book Cover */}

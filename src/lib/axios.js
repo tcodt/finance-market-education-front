@@ -4,6 +4,7 @@ const api = axios.create({
   baseURL: "https://fmdapi1070.pythonanywhere.com",
 });
 
+// Attach Token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) {
@@ -16,13 +17,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // فقط اگر 401 واقعی از بک‌اند گرفتیم، نه زمان logout!
     if (error.response && error.response.status === 401) {
-      // handle unauthorized: clear tokens and redirect to login
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
+      console.warn("401 detected → user must re-login");
     }
     return Promise.reject(error);
   }

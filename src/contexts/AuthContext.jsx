@@ -9,6 +9,7 @@ import {
   signupWithPhone,
   logout as logoutUser,
 } from "@/services/auth.service";
+import axios from "axios";
 
 const AuthContext = createContext(null);
 
@@ -30,10 +31,15 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const savedAccess = localStorage.getItem("access_token");
     const savedRefresh = localStorage.getItem("refresh_token");
+    const savedUser = localStorage.getItem("user");
 
     if (savedAccess && savedRefresh) {
       setTokens({ access: savedAccess, refresh: savedRefresh });
       setIsAuthenticated(true);
+    }
+
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
   }, []);
 
@@ -60,8 +66,6 @@ export function AuthProvider({ children }) {
     },
 
     onSuccess: (res) => {
-      console.log("login success log: ", res);
-
       setTokens({
         access: res.access,
         refresh: res.refresh,
@@ -71,6 +75,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem("refresh_token", res.refresh);
 
       setUser(res.user || null);
+      localStorage.setItem("user", JSON.stringify(res.user || null));
       setIsAuthenticated(true);
 
       setIsLoadingGlobal(false);
@@ -110,7 +115,6 @@ export function AuthProvider({ children }) {
     },
 
     onSuccess: (res) => {
-      console.log("register success log: ", res);
       setTokens({
         access: res.access,
         refresh: res.refresh,
@@ -120,6 +124,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem("refresh_token", res.refresh);
 
       setUser(res.user || null);
+      localStorage.setItem("user", JSON.stringify(res.user || null));
       setIsAuthenticated(true);
 
       setIsLoadingGlobal(false);
@@ -145,14 +150,24 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    await logoutUser();
+    const token = localStorage.getItem("refresh_token");
+
+    try {
+      await logoutUser(token);
+    } catch (error) {
+      console.error(
+        "Logout request failed (token expired or other issue), proceeding with client cleanup:",
+        error
+      );
+    }
 
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
 
-    setTokens({ access: null, refresh: null });
     setUser(null);
     setIsAuthenticated(false);
+    queryClient.clear();
   };
 
   return (

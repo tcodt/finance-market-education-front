@@ -15,10 +15,12 @@ import {
   BookOpen,
   Library,
   Home,
+  LucideLogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AuthModal from "@/components/auth/AuthModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { icon: Home, label: "صفحه اصلی", page: "Home" },
@@ -33,6 +35,8 @@ export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [logoutMode, setLogoutMode] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   return (
     <>
@@ -99,27 +103,43 @@ export default function Sidebar({ isOpen, onClose }) {
 
           {/* Auth Buttons */}
           <div className="space-y-2 pt-4 border-t border-[#D9D9D9]">
-            <Button
-              onClick={() => {
-                setIsSignUpMode(false);
-                setShowAuthModal(true);
-              }}
-              className="w-full bg-[#000000] hover:bg-[#333333] text-white rounded-lg py-2.5 gap-2 text-sm"
-            >
-              <LogIn className="w-4 h-4" />
-              ورود
-            </Button>
-            <Button
-              onClick={() => {
-                setIsSignUpMode(true);
-                setShowAuthModal(true);
-              }}
-              variant="outline"
-              className="w-full border-[#D9D9D9] hover:border-[#000000] hover:text-[#000000] rounded-lg py-2.5 gap-2 text-sm"
-            >
-              <UserPlus className="w-4 h-4" />
-              ثبت‌نام
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                onClick={() => {
+                  setLogoutMode(true);
+                  setShowAuthModal(true);
+                }}
+                variant="outline"
+                className="w-full border-[#D9D9D9] hover:border-[#000000] hover:text-[#000000] rounded-lg py-2.5 gap-2 text-sm"
+              >
+                <LucideLogOut className="w-4 h-4" />
+                خروج
+              </Button>
+            ) : (
+              <>
+                <Button
+                  onClick={() => {
+                    setIsSignUpMode(false);
+                    setShowAuthModal(true);
+                  }}
+                  className="w-full bg-[#000000] hover:bg-[#333333] text-white rounded-lg py-2.5 gap-2 text-sm"
+                >
+                  <LogIn className="w-4 h-4" />
+                  ورود
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsSignUpMode(true);
+                    setShowAuthModal(true);
+                  }}
+                  variant="outline"
+                  className="w-full border-[#D9D9D9] hover:border-[#000000] hover:text-[#000000] rounded-lg py-2.5 gap-2 text-sm"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  ثبت‌نام
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </aside>
@@ -128,6 +148,7 @@ export default function Sidebar({ isOpen, onClose }) {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         isSignUpDefault={isSignUpMode}
+        logoutMode={logoutMode}
       />
     </>
   );

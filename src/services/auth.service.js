@@ -23,7 +23,7 @@ export const signupWithPhone = async (data) => {
 };
 
 // Logout
-export const logout = async () => {
-  const res = await api.post("/accounts/logout/");
+export const logout = async (token) => {
+  const res = await api.post("/accounts/logout/", { refresh: token });
   return res.data;
 };
