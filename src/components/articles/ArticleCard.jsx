@@ -15,13 +15,13 @@ const categoryColors = {
 export default function ArticleCard({ article }) {
   return (
     <Link
-      href={createPageUrl("article-detail") + `?id=${article.id}`}
+      href={`/blogs/${article.slug}`}
       className="group block overflow-hidden"
     >
       {/* Image */}
       <div className="aspect-[16/9] overflow-hidden rounded-xl mb-3">
         <img
-          src={article.image}
+          src={article.cover}
           alt={article.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />

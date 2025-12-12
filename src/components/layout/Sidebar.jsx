@@ -25,9 +25,9 @@ import { useAuth } from "@/contexts/AuthContext";
 const menuItems = [
   { icon: Home, label: "صفحه اصلی", page: "Home" },
   { icon: PlayCircle, label: "آموزش‌های ویدیویی", page: "video-courses" },
-  { icon: BookOpen, label: "آموزش‌های مقاله‌ای", page: "article-courses" },
+  { icon: BookOpen, label: "آموزش‌های مقاله‌ای", page: "articles" },
   { icon: Library, label: "خلاصه کتاب", page: "book-summaries" },
-  { icon: FileText, label: "مقالات بازار مالی", page: "articles" },
+  { icon: FileText, label: "مقالات بازار مالی", page: "blogs" },
   { icon: Award, label: "لیدر بورد", page: "leaderboard" },
 ];
 
@@ -36,7 +36,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [logoutMode, setLogoutMode] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <>
@@ -101,6 +101,21 @@ export default function Sidebar({ isOpen, onClose }) {
             })}
           </nav>
 
+          {/* Current User Info */}
+          {user && (
+            <div className="my-4 p-3 rounded-lg bg-gray-100 border border-gray-300">
+              <div className="font-bold text-sm text-gray-800">
+                {user.first_name && user.last_name
+                  ? user.first_name + " " + user.last_name
+                  : user.full_name}
+              </div>
+
+              <div className="text-xs text-gray-600 mt-1">
+                {user.email ? user.email : user.phone_number}
+              </div>
+            </div>
+          )}
+
           {/* Auth Buttons */}
           <div className="space-y-2 pt-4 border-t border-[#D9D9D9]">
             {isAuthenticated ? (
@@ -120,6 +135,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 <Button
                   onClick={() => {
                     setIsSignUpMode(false);
+                    setLogoutMode(false);
                     setShowAuthModal(true);
                   }}
                   className="w-full bg-[#000000] hover:bg-[#333333] text-white rounded-lg py-2.5 gap-2 text-sm"
@@ -130,6 +146,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 <Button
                   onClick={() => {
                     setIsSignUpMode(true);
+                    setLogoutMode(false);
                     setShowAuthModal(true);
                   }}
                   variant="outline"
@@ -146,7 +163,10 @@ export default function Sidebar({ isOpen, onClose }) {
 
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={() => {
+          setShowAuthModal(false);
+          setLogoutMode(false);
+        }}
         isSignUpDefault={isSignUpMode}
         logoutMode={logoutMode}
       />

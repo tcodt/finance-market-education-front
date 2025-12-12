@@ -37,7 +37,7 @@ export default function Home() {
           </Link>
 
           <Link
-            href={createPageUrl("articles")}
+            href={createPageUrl("blogs")}
             className="group flex items-center gap-3 bg-white hover:bg-[#000000] text-[#000000] hover:text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 min-w-[200px] justify-center border border-[#D9D9D9]"
           >
             <FileText className="w-6 h-6" />

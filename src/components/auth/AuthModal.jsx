@@ -142,6 +142,11 @@ export default function AuthModal({
         }
       }
 
+      // Handle server errors (5xx)
+      if (err?.response?.status >= 500) {
+        return toast.error("خطای سرور. لطفا بعداً دوباره تلاش کنید.");
+      }
+
       // -----------------------------
       //  SIGNUP specific errors (fallback)
       // -----------------------------
