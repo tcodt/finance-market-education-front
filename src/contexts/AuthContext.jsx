@@ -9,12 +9,13 @@ import {
   signupWithPhone,
   logout as logoutUser,
 } from "@/services/auth.service";
-import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [user, setUser] = useState(null);
   const [tokens, setTokens] = useState({
@@ -79,6 +80,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
 
       setIsLoadingGlobal(false);
+      router.push("/home");
     },
 
     onError: (err) => {
@@ -128,6 +130,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
 
       setIsLoadingGlobal(false);
+      router.push("/home");
     },
 
     onError: (err) => {
