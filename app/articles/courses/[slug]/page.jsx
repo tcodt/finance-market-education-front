@@ -18,7 +18,17 @@ export default function ArticleCourseDetailPage() {
   }, [data]);
 
   if (isLoading) return <p>در حال بارگذاری...</p>;
-  if (isError) return <p>خطا در دریافت اطلاعات</p>;
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Lock className="w-12 h-12 text-red-500" />
+        <h4 className="text-xl font-bold text-gray-800">دسترسی غیرمجاز</h4>
+        <p className="text-gray-600">
+          برای مشاهده این بخش باید وارد حساب کاربری خود شوید
+        </p>
+      </div>
+    );
+  }
 
   const completedCount = data.sections.length; // نیاز به API واقعی برای استیت‌ها
   const totalCount = data.sections.length;

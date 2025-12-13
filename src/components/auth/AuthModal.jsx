@@ -27,6 +27,7 @@ import {
 
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function AuthModal({
   isOpen,
@@ -43,6 +44,7 @@ export default function AuthModal({
   const [verificationCode, setVerificationCode] = useState("");
 
   const { login, signup, logout } = useAuth();
+  const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(isSignUp ? signupSchema : loginSchema),
@@ -203,6 +205,7 @@ export default function AuthModal({
                   logout();
                   toast.success("با موفقیت خارج شدید.");
                   onClose();
+                  router.push("/home");
                 }}
               >
                 خروج
