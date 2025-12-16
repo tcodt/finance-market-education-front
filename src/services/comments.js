@@ -1,19 +1,23 @@
 import api from "@/lib/axios";
 
-export const getComments = async (blogId, slug) => {
-  try {
-    const response = await api.get(`/blogs/${blogId}/${slug}/comments/`);
-    return response.data;
-  } catch (error) {
-    console.log("GET COMMENTS ERROR: ", error);
+export const postComment = async ({ type, id, slug, data, userId }) => {
+  if (type === "course") {
+    return api.post(`/courses/${id}/comments/`, {
+      course: id,
+      parent: data.parent ?? null,
+      content: data.content,
+      is_approved: true,
+    });
   }
-};
 
-export const postComment = async (blogId, slug, data) => {
-  try {
-    const response = await api.post(`/blogs/${blogId}/${slug}/comments/`, data);
-    return response.data;
-  } catch (error) {
-    console.log("POST COMMENT ERROR: ", error);
+  if (type === "blog") {
+    return api.post(`/blogs/${id}/${slug}/comments/`, {
+      blog: id,
+      user: userId,
+      parent: data.parent ?? null,
+      content: data.content,
+    });
   }
+
+  throw new Error("Invalid comment type");
 };

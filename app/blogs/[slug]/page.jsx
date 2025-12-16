@@ -140,7 +140,7 @@ export default function ArticleDetail() {
         </Link>
       </div>
 
-      <Comments type="article" blogId={article.id} slug={article.slug} />
+      <Comments type="blog" id={article.id} slug={article.slug} />
     </div>
   );
 }

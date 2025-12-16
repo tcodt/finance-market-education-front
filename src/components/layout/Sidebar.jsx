@@ -21,10 +21,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGetUserProfile } from "@/hooks/useGetUserProfile";
 
 const menuItems = [
   { icon: Home, label: "صفحه اصلی", page: "Home" },
-  { icon: PlayCircle, label: "آموزش‌های ویدیویی", page: "video-courses" },
+  { icon: PlayCircle, label: "آموزش‌های ویدیویی", page: "courses" },
   { icon: BookOpen, label: "آموزش‌های مقاله‌ای", page: "articles" },
   { icon: Library, label: "خلاصه کتاب", page: "book-summaries" },
   { icon: FileText, label: "مقالات بازار مالی", page: "blogs" },
@@ -36,7 +37,8 @@ export default function Sidebar({ isOpen, onClose }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [logoutMode, setLogoutMode] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { data: user } = useGetUserProfile();
 
   return (
     <>

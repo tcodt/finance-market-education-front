@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export default function VideoCourseCard({ course }) {
   return (
     <Link
-      href={`${createPageUrl("video-course-detail")}?id=${course.id}`}
+      href={`/courses/${course.id}/`}
       className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-[#D9D9D9] hover:shadow-xl transition-all duration-300"
     >
       {/* Course Image */}

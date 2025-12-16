@@ -17,11 +17,6 @@ export function AuthProvider({ children }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const [user, setUser] = useState(null);
-  const [tokens, setTokens] = useState({
-    access: null,
-    refresh: null,
-  });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
   const [error, setError] = useState(null);
@@ -32,15 +27,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const savedAccess = localStorage.getItem("access_token");
     const savedRefresh = localStorage.getItem("refresh_token");
-    const savedUser = localStorage.getItem("user");
 
     if (savedAccess && savedRefresh) {
-      setTokens({ access: savedAccess, refresh: savedRefresh });
       setIsAuthenticated(true);
-    }
-
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
     }
   }, []);
 
@@ -67,19 +56,14 @@ export function AuthProvider({ children }) {
     },
 
     onSuccess: (res) => {
-      setTokens({
-        access: res.access,
-        refresh: res.refresh,
-      });
-
       localStorage.setItem("access_token", res.access);
       localStorage.setItem("refresh_token", res.refresh);
 
-      setUser(res.user || null);
-      localStorage.setItem("user", JSON.stringify(res.user || null));
       setIsAuthenticated(true);
-
       setIsLoadingGlobal(false);
+
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+
       router.push("/home");
     },
 
@@ -125,11 +109,11 @@ export function AuthProvider({ children }) {
       localStorage.setItem("access_token", res.access);
       localStorage.setItem("refresh_token", res.refresh);
 
-      setUser(res.user || null);
-      localStorage.setItem("user", JSON.stringify(res.user || null));
       setIsAuthenticated(true);
-
       setIsLoadingGlobal(false);
+
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+
       router.push("/home");
     },
 
@@ -166,18 +150,15 @@ export function AuthProvider({ children }) {
 
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
 
-    setUser(null);
     setIsAuthenticated(false);
+    queryClient.removeQueries({ queryKey: ["user-profile"] });
     queryClient.clear();
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        tokens,
         isAuthenticated,
         isLoadingGlobal,
         error,
