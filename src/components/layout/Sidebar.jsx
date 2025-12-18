@@ -24,12 +24,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGetUserProfile } from "@/hooks/useGetUserProfile";
 
 const menuItems = [
-  { icon: Home, label: "صفحه اصلی", page: "Home" },
+  { icon: Home, label: "صفحه اصلی", page: "home" },
   { icon: PlayCircle, label: "آموزش‌های ویدیویی", page: "courses" },
-  { icon: BookOpen, label: "آموزش‌های مقاله‌ای", page: "articles" },
-  { icon: Library, label: "خلاصه کتاب", page: "book-summaries" },
+  { icon: BookOpen, label: "آموزش‌های متنی", page: "articles" },
+  // { icon: Library, label: "خلاصه کتاب", page: "book-summaries" },
   { icon: FileText, label: "مقالات بازار مالی", page: "blogs" },
-  { icon: Award, label: "لیدر بورد", page: "leaderboard" },
+  // { icon: Award, label: "لیدر بورد", page: "leaderboard" },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -39,6 +39,22 @@ export default function Sidebar({ isOpen, onClose }) {
   const [logoutMode, setLogoutMode] = useState(false);
   const { isAuthenticated } = useAuth();
   const { data: user } = useGetUserProfile();
+
+  // تابع بهبود یافته برای تشخیص active بودن
+  const isItemActive = (page) => {
+    if (page === "home") {
+      return pathname === "/" || pathname === "";
+    }
+
+    const pagePath = `/${page}`;
+    const pagePathWithSlash = `/${page}/`;
+
+    return (
+      pathname === pagePath ||
+      pathname.startsWith(pagePathWithSlash) ||
+      pathname.includes(`/${page}?`) // برای query parameters
+    );
+  };
 
   return (
     <>
@@ -80,9 +96,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
             {menuItems.map((item) => {
-              const isActive =
-                pathname.includes(item.page) ||
-                (item.page === "Dashboard" && pathname === "/");
+              const isActive = isItemActive(item.page);
 
               return (
                 <Link

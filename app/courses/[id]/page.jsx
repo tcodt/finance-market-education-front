@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { useState, useEffect } from "react";
 
 import VideoPlayer from "@/components/video/VideoPlayer";
 import InstructorInfo from "@/components/video/InstructorInfo";
@@ -9,10 +10,29 @@ import ProgressPanel from "@/components/video/ProgressPanel";
 import Comments from "@/components/shared/Comments";
 
 import { useGetCourseById } from "@/hooks/useGetCourseById";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 
 export default function CourseDetail() {
   const { id } = useParams();
-  const { data: course, isLoading } = useGetCourseById(id);
+  const router = useRouter();
+  const {
+    data: course,
+    isLoading,
+    refetch: refetchCourse,
+  } = useGetCourseById(id);
+  const { data: progress, refetch: refetchProgress } = useCourseProgress(id);
+
+  // state برای نگهداری index درس فعلی
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+
+  // وقتی progress تغییر کرد، درس فعلی رو به‌روز کن
+  useEffect(() => {
+    if (progress && course?.lessons) {
+      const completed = progress.completed_lessons || 0;
+      const maxIndex = course.lessons.length - 1;
+      setCurrentLessonIndex(Math.min(completed, maxIndex));
+    }
+  }, [progress, course]);
 
   if (isLoading) {
     return (
@@ -24,9 +44,24 @@ export default function CourseDetail() {
 
   if (!course) return null;
 
+  // درس فعلی
+  const currentLesson = course.lessons[currentLessonIndex];
+  const isLastLesson = currentLessonIndex === course.lessons.length - 1;
+
+  // تابع برای رفتن به درس بعدی
+  const goToNextLesson = async () => {
+    if (isLastLesson) return;
+
+    setCurrentLessonIndex((prev) => prev + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // بعد از تغییر درس، progress رو دوباره بگیر تا تیک درست بخوره
+    await refetchProgress();
+  };
+
   return (
     <div className="w-full px-[3%]">
-      {/* Breadcrumb */}
+      {/* مسیر ناوبری */}
       <nav className="flex items-center gap-2 text-sm mb-3 flex-wrap">
         <span className="text-[#6E6E6E] hover:text-[#E45858] cursor-pointer transition-colors">
           دوره‌ها
@@ -36,25 +71,105 @@ export default function CourseDetail() {
           همه دوره‌ها
         </span>
         <ChevronLeft className="w-4 h-4 text-[#6E6E6E]" />
-        <span className="text-[#1A1A1A] font-medium">{course.title}</span>
+        <span className="text-[#1A1A1A] font-medium">
+          {course.title} - درس {currentLessonIndex + 1} از{" "}
+          {course.lessons.length}
+        </span>
       </nav>
 
       <div className="flex gap-4">
-        {/* Progress Panel */}
+        {/* پنل پیشرفت */}
         <div className="w-[260px] flex-shrink-0 hidden lg:block mr-6">
-          <ProgressPanel courseId={course.id} lessons={course.lessons} />
+          <ProgressPanel
+            courseId={course.id}
+            lessons={course.lessons}
+            currentLessonIndex={currentLessonIndex}
+          />
         </div>
 
-        {/* Main Content */}
+        {/* محتوای اصلی */}
         <div className="flex-1 space-y-4">
-          {/* Video Player */}
-          <VideoPlayer
-            title={course.title}
-            thumbnail="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&h=675&fit=crop" // firstLesson?.video_url
-            videoUrl="https://www.w3schools.com/html/mov_bbb.mp4"
-          />
+          {/* پخش کننده ویدیو */}
+          {currentLesson ? (
+            <>
+              <VideoPlayer
+                key={currentLesson.id}
+                title={currentLesson.title}
+                thumbnail={currentLesson.thumbnail}
+                videoUrl={currentLesson.video_url}
+                courseId={course.id}
+                lessonId={currentLesson.id}
+                isLastLesson={isLastLesson}
+                onVideoEnd={goToNextLesson}
+              />
 
-          {/* Instructor Info */}
+              {/* دکمه‌های ناوبری دستی */}
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => {
+                    if (currentLessonIndex > 0) {
+                      setCurrentLessonIndex((prev) => prev - 1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  disabled={currentLessonIndex === 0}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    currentLessonIndex === 0
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-[#E45858] hover:bg-[#d14545] text-white"
+                  }`}
+                >
+                  ← درس قبلی
+                </button>
+
+                <div className="text-sm text-[#6E6E6E]">
+                  درس {currentLessonIndex + 1} از {course.lessons.length}
+                </div>
+
+                <button
+                  onClick={goToNextLesson}
+                  disabled={isLastLesson}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    isLastLesson
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-[#10B981] hover:bg-[#0DA271] text-white"
+                  }`}
+                >
+                  درس بعدی →
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5E1DC] text-center">
+              <p className="text-lg font-bold text-[#1A1A1A]">
+                🎉 تبریک! شما تمام درس‌های این دوره را به پایان رساندید.
+              </p>
+              <button
+                onClick={() => setCurrentLessonIndex(0)}
+                className="mt-4 bg-[#E45858] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#d14545] transition-colors"
+              >
+                بازگشت به اولین درس
+              </button>
+            </div>
+          )}
+
+          {/* اطلاعات درس فعلی */}
+          {currentLesson && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5E1DC]">
+              <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
+                {currentLesson.title}
+              </h2>
+              <p className="text-[#6E6E6E] text-sm mb-4">
+                مدت زمان: {currentLesson.duration_minutes || 0} دقیقه
+              </p>
+              <p className="text-[#1A1A1A] leading-relaxed">
+                {currentLesson.description ||
+                  "توضیحاتی برای این درس وجود ندارد."}
+              </p>
+            </div>
+          )}
+
+          {/* اطلاعات مدرس */}
           <InstructorInfo
             name={course.instructor?.full_name}
             email={course.instructor?.email}
@@ -63,7 +178,7 @@ export default function CourseDetail() {
             lessons={course.total_sessions}
           />
 
-          {/* Course Description */}
+          {/* توضیحات دوره */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5E1DC]">
             <h3 className="text-lg font-bold text-[#1A1A1A] mb-4">
               درباره دوره
@@ -73,7 +188,7 @@ export default function CourseDetail() {
             </div>
           </div>
 
-          {/* Comments */}
+          {/* نظرات */}
           <Comments type="course" id={course.id} />
         </div>
       </div>

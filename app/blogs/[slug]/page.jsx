@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Comments from "@/components/shared/Comments";
+import { toast } from "sonner";
 
 export default function ArticleDetail() {
   const { slug } = useParams();
@@ -48,7 +49,7 @@ export default function ArticleDetail() {
           {article.category?.title}
         </Badge>
 
-        <h1 className="text-2xl md:text-4xl font-bold leading-relaxed">
+        <h1 className="text-2xl md:text-4xl font-bold leading-relaxed my-4">
           {article.title}
         </h1>
 
@@ -115,26 +116,150 @@ export default function ArticleDetail() {
       </div>
 
       {/* Share */}
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-12 p-6 bg-white rounded-2xl border">
-        <div className="flex items-center gap-3">
-          <span className="text-[#6E6E6E]">اشتراک‌گذاری:</span>
+      <div className="flex flex-col md:flex-row justify-between gap-6 mb-12 p-6 bg-white rounded-2xl border shadow-sm">
+        <div className="flex items-center gap-4 flex-wrap">
+          <span className="text-[#6E6E6E] whitespace-nowrap">
+            اشتراک‌گذاری:
+          </span>
 
-          <button className="share-btn">
-            <Twitter className="w-5 h-5" />
+          {/* شیر در X (توییتر) */}
+          {article.x && (
+            <a
+              href={article.x}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors"
+              aria-label="پروفایل X نویسنده"
+            >
+              <Twitter className="w-5 h-5" />
+            </a>
+          )}
+
+          {/* شیر واقعی در X - پست مقاله */}
+          <button
+            onClick={() => {
+              const url = encodeURIComponent(window.location.href);
+              const text = encodeURIComponent(
+                `${article.title} — مقاله‌ای از ${article.author?.full_name}`
+              );
+              window.open(
+                `https://x.com/intent/post?url=${url}&text=${text}`,
+                "share-x",
+                "width=600,height=400"
+              );
+            }}
+            className="p-2 rounded-full bg-black/10 hover:bg-black/20 transition-colors"
+            aria-label="اشتراک در X"
+          >
+            <Twitter className="w-5 h-5 text-black" />
           </button>
 
-          <button className="share-btn">
+          {/* لینکدین */}
+          <button
+            onClick={() => {
+              const url = encodeURIComponent(window.location.href);
+              const title = encodeURIComponent(article.title);
+              const summary = encodeURIComponent(
+                article.excerpt || article.title
+              );
+              window.open(
+                `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`,
+                "share-linkedin",
+                "width=600,height=600"
+              );
+            }}
+            className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            aria-label="اشتراک در لینکدین"
+          >
             <Linkedin className="w-5 h-5" />
           </button>
 
-          <button className="share-btn">
+          {/* کپی لینک */}
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(window.location.href);
+                // می‌تونی یه toast ساده نشون بدی (اختیاری)
+                toast.success("لینک مقاله کپی شد!");
+              } catch (err) {
+                toast.error("خطا در کپی لینک");
+              }
+            }}
+            className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
+            aria-label="کپی لینک"
+          >
             <Link2 className="w-5 h-5" />
           </button>
         </div>
 
+        {/* لینک‌های سوشیال نویسنده اگر وجود داشته باشه */}
+        {(article.telegram || article.instagram || article.youtube) && (
+          <div className="flex items-center gap-3">
+            <span className="text-[#6E6E6E] text-sm whitespace-nowrap">
+              پروفایل نویسنده:
+            </span>
+            <div className="flex gap-2">
+              {article.telegram && (
+                <a
+                  href={article.telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-cyan-500 text-white hover:bg-cyan-600 transition-colors"
+                  aria-label="تلگرام"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-.78l15.1-5.8c.73-.28 1.38.5.99 1.16L14.1 17.5l-1.7 4.03c-.24.57-.88.7-1.24.38l-2.58-2.6z" />
+                  </svg>
+                </a>
+              )}
+
+              {article.instagram && (
+                <a
+                  href={article.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-gradient-to-tr from-purple-600 via-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
+                  aria-label="اینستاگرام"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.67 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.25-.15-4.77-1.69-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.15-3.23 1.67-4.77 4.92-4.92 1.27-.06 1.65-.07 4.85-.07zm0 1.8c-3.16 0-3.53.01-4.79.07-2.45.12-3.75 1.42-3.88 3.88-.06 1.26-.07 1.63-.07 4.79s.01 3.53.07 4.79c.12 2.46 1.42 3.76 3.88 3.88 1.26.06 1.63.07 4.79.07s3.53-.01 4.79-.07c2.46-.12 3.76-1.42 3.88-3.88.06-1.26.07-1.63.07-4.79s-.01-3.53-.07-4.79c-.12-2.45-1.42-3.75-3.88-3.88-1.26-.06-1.63-.07-4.79-.07zm0 3.24a5.76 5.76 0 110 11.52 5.76 5.76 0 010-11.52zm0 9.52a3.76 3.76 0 100-7.52 3.76 3.76 0 000 7.52zm6.04-9.96a1.36 1.36 0 11-2.72 0 1.36 1.36 0 012.72 0z" />
+                  </svg>
+                </a>
+              )}
+
+              {article.youtube && (
+                <a
+                  href={article.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  aria-label="یوتیوب"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M23.5 6.96c-.27-1.02-1.07-1.82-2.09-2.09-1.84-.49-9.41-.49-9.41-.49s-7.57 0-9.41.49c-1.02.27-1.82 1.07-2.09 2.09C.24 8.81.24 12 .24 12s0 3.19.27 5.04c.27 1.02 1.07 1.82 2.09 2.09 1.84.49 9.41.49 9.41.49s7.57 0 9.41-.49c1.02-.27 1.82-1.07 2.09-2.09.27-1.85.27-5.04.27-5.04s.01-3.19-.27-5.04zM9.8 15.62V8.38l6.27 3.62-6.27 3.62z" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* دکمه آموزش‌های مرتبط - بدون تغییر */}
         <Link href={createPageUrl("video-education")}>
-          <Button className="bg-[#E45858] hover:bg-[#d14545] text-white rounded-xl px-6">
-            <PlayCircle className="w-5 h-5" />
+          <Button className="bg-[#E45858] hover:bg-[#d14545] text-white rounded-xl px-6 whitespace-nowrap">
+            <PlayCircle className="w-5 h-5 ml-2" />
             مشاهده آموزش‌های مرتبط
           </Button>
         </Link>

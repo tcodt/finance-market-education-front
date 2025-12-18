@@ -1,21 +1,20 @@
 "use client";
 
 import { useState, useRef } from "react";
-import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Maximize,
-  SkipBack,
-  SkipForward,
-  VideoOff,
-} from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { useCompleteLesson } from "@/hooks/useCompleteLesson";
 
-export default function VideoPlayer({ videoUrl, thumbnail, title }) {
+export default function VideoPlayer({
+  videoUrl,
+  title,
+  courseId,
+  lessonId,
+  onVideoEnd,
+}) {
   const videoRef = useRef(null);
+  const { mutate: completeLesson, isPending } = useCompleteLesson();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -24,126 +23,151 @@ export default function VideoPlayer({ videoUrl, thumbnail, title }) {
 
   const hasVideo = Boolean(videoUrl);
 
-  const togglePlay = () => {
-    if (!hasVideo) return;
+  // وقتی ویدیو به آخر رسید → درس رو کامل کن
+  const handleVideoEnd = () => {
+    if (courseId && lessonId) {
+      completeLesson(
+        { courseId, lessonId },
+        {
+          onSuccess: () => {
+            console.log("درس با موفقیت کامل شد!");
+            if (onVideoEnd) onVideoEnd();
+          },
+          onError: (error) => {
+            console.error("خطا در ثبت تکمیل درس:", error);
+          },
+        }
+      );
+    } else if (onVideoEnd) {
+      onVideoEnd();
+    }
+  };
 
+  // آپدیت پیشرفت
+  const handleTimeUpdate = (e) => {
+    const percent = (e.target.currentTime / e.target.duration) * 100;
+    setProgress(percent || 0);
+  };
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
     } else {
       videoRef.current.play();
     }
-
     setIsPlaying(!isPlaying);
+  };
+
+  const handleSeek = (value) => {
+    if (!videoRef.current) return;
+    const time = (value[0] / 100) * videoRef.current.duration;
+    videoRef.current.currentTime = time;
+    setProgress(value[0]);
   };
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden bg-[#1A1A1A] shadow-2xl group"
+      className="relative rounded-2xl overflow-hidden bg-black shadow-2xl"
       onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => !isPlaying && setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
     >
       <div className="aspect-video relative">
-        {/* ================= VIDEO ================= */}
         {hasVideo ? (
           <video
             ref={videoRef}
             src={videoUrl}
+            className="w-full h-full object-contain"
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleVideoEnd}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
             muted={isMuted}
-            className="w-full h-full object-cover"
-            onTimeUpdate={(e) => {
-              const percent = (e.target.currentTime / e.target.duration) * 100;
-              setProgress(percent || 0);
-            }}
           />
         ) : (
-          <>
-            {/* Thumbnail */}
-            <img
-              src={
-                thumbnail ||
-                "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&h=675&fit=crop"
-              }
-              alt={title}
-              className="w-full h-full object-cover opacity-70"
-            />
-
-            {/* No Video Icon */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white gap-3">
-              <VideoOff className="w-14 h-14 opacity-80" />
-              <span className="text-sm opacity-80">
-                ویدیویی برای این جلسه وجود ندارد
-              </span>
-            </div>
-          </>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white">
+            <Maximize className="w-16 h-16 opacity-50 mb-4" />
+            <p className="text-lg">ویدیویی برای این درس موجود نیست</p>
+          </div>
         )}
 
-        {/* Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-        {/* Center Play Button */}
+        {/* پلی وسط صفحه */}
         {!isPlaying && hasVideo && (
           <button
             onClick={togglePlay}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-[#E45858] hover:bg-[#d14545] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-2xl shadow-[#E45858]/40"
+            className="absolute inset-0 flex items-center justify-center z-10"
           >
-            <Play className="w-8 h-8 text-white fill-white mr-[-4px]" />
+            <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform">
+              <Play className="w-10 h-10 text-[#E45858] fill-[#E45858] ml-1" />
+            </div>
           </button>
         )}
 
-        {/* ================= CONTROLS ================= */}
+        {/* در حال ثبت تکمیل */}
+        {isPending && (
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
+            <p className="text-white text-lg font-medium">
+              در حال ثبت تکمیل درس...
+            </p>
+          </div>
+        )}
+
+        {/* کنترل‌ها */}
         {hasVideo && (
           <div
             className={cn(
-              "absolute bottom-0 left-0 right-0 p-4 transition-opacity duration-300",
+              "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-300",
               showControls ? "opacity-100" : "opacity-0"
             )}
           >
-            {/* Progress */}
-            <div className="mb-4">
+            {/* اسلایدر پیشرفت */}
+            <div className="mb-3">
               <Slider
                 value={[progress]}
-                onValueChange={(val) => {
-                  const time = (val[0] / 100) * videoRef.current.duration;
-                  videoRef.current.currentTime = time;
-                  setProgress(val[0]);
-                }}
+                onValueChange={handleSeek}
                 max={100}
-                step={1}
-                className="cursor-pointer [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-[#E45858] [&_[role=slider]]:border-0 [&_.bg-primary]:bg-[#E45858] [&_.bg-secondary]:bg-white/30"
+                step={0.1}
+                className="cursor-pointer [&_[role=slider]]:bg-[#E45858] [&_.bg-primary]:bg-[#E45858]"
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            {/* دکمه‌های کنترل */}
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center gap-4">
                 <button
                   onClick={togglePlay}
-                  className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                  className="p-2 rounded-full hover:bg-white/20 transition-colors"
                 >
                   {isPlaying ? (
-                    <Pause className="w-5 h-5 text-white fill-white" />
+                    <Pause className="w-5 h-5" />
                   ) : (
-                    <Play className="w-5 h-5 text-white fill-white mr-[-2px]" />
+                    <Play className="w-5 h-5 ml-1" />
                   )}
                 </button>
 
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors"
+                  className="p-2 rounded-full hover:bg-white/20 transition-colors"
                 >
                   {isMuted ? (
-                    <VolumeX className="w-4 h-4 text-white" />
+                    <VolumeX className="w-5 h-5" />
                   ) : (
-                    <Volume2 className="w-4 h-4 text-white" />
+                    <Volume2 className="w-5 h-5" />
                   )}
                 </button>
               </div>
 
-              <button className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors">
-                <Maximize className="w-4 h-4 text-white" />
+              <button className="p-2 rounded-full hover:bg-white/20 transition-colors">
+                <Maximize className="w-5 h-5" />
               </button>
             </div>
           </div>
         )}
+      </div>
+
+      {/* عنوان درس زیر ویدیو */}
+      <div className="p-4 bg-white">
+        <h3 className="font-semibold text-lg">{title}</h3>
       </div>
     </div>
   );

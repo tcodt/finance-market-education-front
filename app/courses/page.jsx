@@ -7,7 +7,15 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useGetCourses } from "@/hooks/useGetCourses";
 
+// دسته‌بندی‌های ثابت
 const categories = ["همه", "مقدماتی", "متوسط", "پیشرفته"];
+
+// مپینگ سطح انگلیسی به فارسی
+const levelMap = {
+  preliminary: "مقدماتی",
+  intermediate: "متوسط",
+  advanced: "پیشرفته",
+};
 
 export default function Courses() {
   const { data: courses, isLoading } = useGetCourses();
@@ -18,21 +26,28 @@ export default function Courses() {
   const mappedCourses = useMemo(() => {
     if (!courses) return [];
 
-    return courses.map((course) => ({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      image:
-        "https://images.unsplash.com/photo-1642790595397-7047dc98fa72?w=800&h=600&fit=crop", // فعلاً placeholder
-      category: "متوسط", // تا وقتی بک‌اند بفرسته
-      instructor: {
-        name: course.instructor?.full_name,
-      },
-      lessons: course.lessons?.length || 0,
-      duration: `${course.duration_weeks} هفته`,
-      level: "—",
-      progress: 0,
-    }));
+    return courses.map((course) => {
+      // تصویر کاور: از thumbnail اولین درس اگر موجود بود، در غیر اینصورت placeholder
+      const coverImage =
+        course.lessons?.[0]?.thumbnail ||
+        "https://images.unsplash.com/photo-1642790595397-7047dc98fa72?w=800&h=600&fit=crop";
+
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        image: coverImage,
+        category: levelMap[course.course_level] || "مقدماتی", // همیشه یکی از سه دسته
+        instructor: {
+          name: course.instructor?.full_name || "نامشخص",
+          avatar: course.instructor?.avatar, // ممکنه undefined باشه
+        },
+        lessons: course.total_sessions || course.lessons?.length || 0,
+        duration: course.duration_weeks ? `${course.duration_weeks} هفته` : "—",
+        level: levelMap[course.course_level] || "مقدماتی",
+        progress: 0,
+      };
+    });
   }, [courses]);
 
   const filteredCourses = mappedCourses.filter((course) => {
@@ -40,8 +55,11 @@ export default function Courses() {
       activeCategory === "همه" || course.category === activeCategory;
 
     const matchesSearch =
-      course.title.includes(searchQuery) ||
-      course.description.includes(searchQuery);
+      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (course.instructor.name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
     return matchesCategory && matchesSearch;
   });

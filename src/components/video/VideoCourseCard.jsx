@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { createPageUrl } from "@/utils";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 export default function VideoCourseCard({ course }) {
@@ -41,14 +40,15 @@ export default function VideoCourseCard({ course }) {
           {course.description}
         </p>
 
-        {/* Instructor */}
+        {/* Instructor با Avatar و Fallback */}
         {course.instructor && (
           <div className="flex items-center gap-2 pt-2">
-            <img
-              src={course.instructor.avatar}
-              alt={course.instructor.name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={course.instructor.avatar} />
+              <AvatarFallback className="bg-[#E45858] text-white text-xs font-bold">
+                {course.instructor.name?.[0] || "?"}
+              </AvatarFallback>
+            </Avatar>
             <span className="text-sm text-[#6E6E6E]">
               {course.instructor.name}
             </span>
