@@ -7,7 +7,8 @@ import { useCourseProgress } from "@/hooks/useCourseProgress";
 export default function ProgressPanel({
   courseId,
   lessons = [],
-  currentLessonIndex = 0, // ← prop جدید
+  currentLessonIndex = 0,
+  onLessonSelect, // ← prop جدید برای انتخاب درس
 }) {
   const { data, isLoading } = useCourseProgress(courseId);
 
@@ -28,7 +29,7 @@ export default function ProgressPanel({
     if (index < completedCount) {
       status = "completed";
     } else if (index === currentLessonIndex) {
-      status = "current"; // ← حالا درست نشون می‌ده حتی اگر هنوز کامل نشده باشه
+      status = "current";
     }
 
     return {
@@ -38,6 +39,7 @@ export default function ProgressPanel({
         ? `${lesson.duration_minutes} دقیقه`
         : "",
       status,
+      index, // برای کلیک نیاز داریم
     };
   });
 
@@ -65,10 +67,15 @@ export default function ProgressPanel({
           />
 
           <div className="space-y-3">
-            {mappedLessons.map((lesson, index) => (
+            {mappedLessons.map((lesson) => (
               <div
                 key={lesson.id}
-                className="flex items-center gap-3 py-1 pr-1"
+                onClick={() => onLessonSelect && onLessonSelect(lesson.index)}
+                className={cn(
+                  "flex items-center gap-3 py-2 pr-1 rounded-lg transition-all duration-200",
+                  "cursor-pointer hover:bg-[#f9f9f9]",
+                  lesson.status === "current" && "bg-[#E45858]/5"
+                )}
               >
                 <div className="relative z-10 flex-shrink-0">
                   <div
@@ -90,14 +97,14 @@ export default function ProgressPanel({
                 <div className="flex-1 min-w-0">
                   <p
                     className={cn(
-                      "text-[13px] leading-tight truncate",
+                      "text-[13px] leading-tight truncate transition-colors",
                       lesson.status === "completed" &&
                         "text-[#1A1A1A] font-medium",
                       lesson.status === "current" && "text-[#E45858] font-bold",
                       lesson.status === "locked" && "text-[#888]"
                     )}
                   >
-                    {index + 1}. {lesson.title}
+                    {lesson.index + 1}. {lesson.title}
                   </p>
                   {lesson.duration && (
                     <p className="text-xs text-[#999] mt-0.5">

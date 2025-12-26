@@ -84,6 +84,10 @@ export default function CourseDetail() {
             courseId={course.id}
             lessons={course.lessons}
             currentLessonIndex={currentLessonIndex}
+            onLessonSelect={(index) => {
+              setCurrentLessonIndex(index);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
           />
         </div>
 
