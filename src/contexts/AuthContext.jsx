@@ -25,8 +25,8 @@ export function AuthProvider({ children }) {
   //     Load token from localStorage (on refresh)
   // -----------------------------------------------------
   useEffect(() => {
-    const savedAccess = localStorage.getItem("access_token");
-    const savedRefresh = localStorage.getItem("refresh_token");
+    const savedAccess = localStorage.getItem("access");
+    const savedRefresh = localStorage.getItem("refresh");
 
     if (savedAccess && savedRefresh) {
       setIsAuthenticated(true);
@@ -56,8 +56,8 @@ export function AuthProvider({ children }) {
     },
 
     onSuccess: (res) => {
-      localStorage.setItem("access_token", res.access);
-      localStorage.setItem("refresh_token", res.refresh);
+      localStorage.setItem("access", res.access);
+      localStorage.setItem("refresh", res.refresh);
 
       setIsAuthenticated(true);
       setIsLoadingGlobal(false);
@@ -106,8 +106,8 @@ export function AuthProvider({ children }) {
         refresh: res.refresh,
       });
 
-      localStorage.setItem("access_token", res.access);
-      localStorage.setItem("refresh_token", res.refresh);
+      localStorage.setItem("access", res.access);
+      localStorage.setItem("refresh", res.refresh);
 
       setIsAuthenticated(true);
       setIsLoadingGlobal(false);
@@ -137,7 +137,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    const token = localStorage.getItem("refresh_token");
+    const token = localStorage.getItem("refresh");
 
     try {
       await logoutUser(token);
@@ -148,8 +148,8 @@ export function AuthProvider({ children }) {
       );
     }
 
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
 
     setIsAuthenticated(false);
     queryClient.removeQueries({ queryKey: ["user-profile"] });

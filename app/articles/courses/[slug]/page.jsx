@@ -3,9 +3,9 @@
 import { useArticleCourseDetail } from "@/hooks/useGetArticleCourseDetail.js";
 import { useParams } from "next/navigation";
 import { ChevronLeft, Lock, Check } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export default function ArticleCourseDetailPage() {
   const { slug } = useParams();
@@ -81,9 +81,13 @@ export default function ArticleCourseDetailPage() {
         {/* Content */}
         <div className="lg:order-2">
           <div className="bg-white rounded-2xl p-8 border shadow-sm">
-            <div className="prose prose-lg max-w-none">
-              <ReactMarkdown>{selectedSection?.body}</ReactMarkdown>
-            </div>
+            <div
+              dir="rtl"
+              className="rich-content prose prose-lg prose-slate max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(selectedSection?.body),
+              }}
+            />
           </div>
         </div>
       </div>
